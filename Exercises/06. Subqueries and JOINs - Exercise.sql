@@ -106,7 +106,7 @@ SELECT d1.continent_code, d1.currency_code, d1.cnt FROM
 	ORDER BY cnt DESC) as d1
 JOIN 
 	(SELECT continent_code, MAX(cnt) as max_count 
-	FROM (SELECT DISTINCT c1.continent_code, COUNT(c1.currency_code) as cnt 
+		FROM (SELECT DISTINCT c1.continent_code, COUNT(c1.currency_code) as cnt 
 			FROM countries as c1 
 			GROUP BY c1.continent_code, c1.currency_code 
 			ORDER BY cnt DESC) as derived
