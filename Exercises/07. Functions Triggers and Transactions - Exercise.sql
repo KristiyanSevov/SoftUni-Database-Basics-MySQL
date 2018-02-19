@@ -4,7 +4,7 @@ BEGIN
 	SELECT first_name, last_name FROM employees 
 	WHERE salary > 35000 
 	ORDER BY first_name, last_name, employee_id;
-END
+END;
 
 -- Ex.2. Employees with Salary Above Number
 CREATE PROCEDURE usp_get_employees_salary_above(salary DOUBLE)
@@ -12,7 +12,7 @@ BEGIN
 	SELECT e.first_name, e.last_name FROM employees as e
 	WHERE e.salary >= salary 
 	ORDER BY e.first_name, e.last_name, e.employee_id;
-END
+END;
 
 -- Ex.3. Town Names Starting With
 CREATE PROCEDURE usp_get_towns_starting_with(str VARCHAR(50))
@@ -20,7 +20,7 @@ BEGIN
 	SELECT name as town_name FROM towns 
 	WHERE LEFT(name, CHAR_LENGTH(str)) = str
 	ORDER BY name;
-END
+END;
 
 -- Ex.4. Employees from Town
 CREATE PROCEDURE usp_get_employees_from_town(town_name VARCHAR(50))
@@ -30,7 +30,7 @@ BEGIN
 	JOIN employees as e ON a.address_id = e.address_id 
 	WHERE t.name = town_name
 	ORDER BY e.first_name, e.last_name, e.employee_id;
-END
+END;
 
 -- Ex.5. Salary Level Function
 CREATE FUNCTION ufn_get_salary_level(salary DOUBLE)
@@ -41,7 +41,7 @@ BEGIN
 		 WHEN salary BETWEEN 30000 AND 50000 THEN 'Average'
 		 ELSE 'High' END);
 	RETURN result;
-END
+END;
 
 -- Ex.6. Employees by Salary Level
 CREATE FUNCTION ufn_get_salary_level(salary DOUBLE)
@@ -59,7 +59,7 @@ BEGIN
 	SELECT first_name, last_name FROM employees
 	WHERE ufn_get_salary_level(salary) = sal_level
 	ORDER BY first_name DESC, last_name DESC;
-END
+END;
 
 -- Ex.7. Define Function
 CREATE FUNCTION ufn_is_word_comprised(set_of_letters varchar(50), word varchar(50))
@@ -77,14 +77,14 @@ BEGIN
 	UNTIL result = 0 OR counter = CHAR_LENGTH(word) + 1
 	END REPEAT;
 	RETURN result;
-END
+END;
 
 -- Ex.8 Find Full Name
 CREATE PROCEDURE usp_get_holders_full_name ()
 BEGIN 
 	SELECT CONCAT(first_name, ' ', last_name) as full_name FROM account_holders
 	ORDER BY full_name, id;
-END
+END;
 
 -- Ex.9 People with Balance Higher Than
 CREATE PROCEDURE usp_get_holders_with_balance_higher_than(num DOUBLE)
@@ -93,7 +93,7 @@ BEGIN
 	JOIN accounts as a ON a.account_holder_id = h.id
 	GROUP BY (h.id) HAVING SUM(a.balance) > num
 	ORDER BY a.id, h.first_name, h.last_name;
-END
+END;
 
 -- Ex.10 Future Value Function
 CREATE FUNCTION ufn_calculate_future_value(total DOUBLE, rate DOUBLE, years INT)
@@ -102,7 +102,7 @@ BEGIN
 	DECLARE result DOUBLE;
 	SET result = total * POW((1 + rate), years);
 	return ROUND(result, 2);
-END 
+END;
 
 -- Ex.11 Calculating Interest
 CREATE FUNCTION ufn_calculate_future_value(total DECIMAL(20,4), rate DECIMAL(15,4), years INT)
@@ -125,30 +125,30 @@ END;
 -- Ex.12 Deposit Money
 CREATE PROCEDURE usp_deposit_money(account_id INT, money_amount DECIMAL(20,4))
 BEGIN
-	START TRANSACTION;
-		CASE WHEN money_amount < 0 
-				THEN ROLLBACK;
-			 ELSE 
-				UPDATE accounts as a 
-				SET a.balance = a.balance + money_amount
-        		WHERE a.id = account_id;
-		END CASE;
-	COMMIT;
+START TRANSACTION;
+	CASE WHEN money_amount < 0 
+		THEN ROLLBACK;
+	ELSE 
+		UPDATE accounts as a 
+		SET a.balance = a.balance + money_amount
+        	WHERE a.id = account_id;
+	END CASE;
+COMMIT;
 END; 
 
 -- Ex.13 Withdraw Money
 CREATE PROCEDURE usp_withdraw_money(account_id INT, money_amount DECIMAL(20,4))
 BEGIN
-	START TRANSACTION;
+START TRANSACTION;
 	CASE WHEN money_amount < 0 OR money_amount > (SELECT a.balance FROM accounts as a
-												  WHERE a.id = account_id)
-		  THEN ROLLBACK;
+						      WHERE a.id = account_id)
+		THEN ROLLBACK;
 	ELSE 
 		UPDATE accounts as a 
 		SET a.balance = a.balance - money_amount
-        WHERE a.id = account_id;
+        	WHERE a.id = account_id;
 	END CASE;
-	COMMIT;
+COMMIT;
 END; 
 
 -- Ex.14 Money Transfer
@@ -156,12 +156,12 @@ CREATE PROCEDURE usp_transfer_money(from_account_id INT, to_account_id INT, amou
 BEGIN
 	START TRANSACTION;
 	CASE WHEN ((SELECT a.id FROM accounts as a WHERE a.id = from_account_id) IS NULL)
-				 OR ((SELECT a.id FROM accounts as a WHERE a.id = to_account_id) IS NULL)
-				 OR from_account_id = to_account_id
-				 OR amount < 0 
-				 OR amount > (SELECT a.balance FROM accounts as a
-									     WHERE a.id = from_account_id)
-		  THEN ROLLBACK;
+			OR ((SELECT a.id FROM accounts as a WHERE a.id = to_account_id) IS NULL)
+			OR from_account_id = to_account_id
+			OR amount < 0 
+			OR amount > (SELECT a.balance FROM accounts as a
+				     WHERE a.id = from_account_id)
+		THEN ROLLBACK;
 	ELSE 
 		UPDATE accounts as a 
 		SET a.balance = a.balance - amount
@@ -184,10 +184,10 @@ CREATE TRIGGER log_balance_changes AFTER UPDATE ON accounts
 FOR EACH ROW
 BEGIN
 	CASE WHEN OLD.balance != NEW.balance THEN 
-		 		INSERT INTO `logs`(account_id, old_sum, new_sum)
-		  		VALUES (OLD.id, OLD.balance, NEW.balance);
-		  ELSE
-		      BEGIN END;
+		INSERT INTO `logs`(account_id, old_sum, new_sum)
+		VALUES (OLD.id, OLD.balance, NEW.balance);
+	ELSE
+		BEGIN END;
 	END CASE;
 END;
 
@@ -202,10 +202,10 @@ CREATE TRIGGER log_balance_changes AFTER UPDATE ON accounts
 FOR EACH ROW
 BEGIN
 	CASE WHEN OLD.balance != NEW.balance THEN 
-		 		INSERT INTO `logs`(account_id, old_sum, new_sum)
-		  		VALUES (OLD.id, OLD.balance, NEW.balance);
-		  ELSE
-		      BEGIN END;
+		 INSERT INTO `logs`(account_id, old_sum, new_sum)
+		 VALUES (OLD.id, OLD.balance, NEW.balance);
+	ELSE
+		BEGIN END;
 	END CASE;
 END;
 
@@ -217,7 +217,7 @@ body TEXT NOT NULL);
 
 CREATE TRIGGER create_notification_email AFTER INSERT ON `logs` 
 FOR EACH ROW
-BEGIN
+BEGIN 
 	INSERT INTO notification_emails (recipient, subject, body)
 	VALUES (NEW.account_id, CONCAT('Balance change for account: ', NEW.account_id),
 	CONCAT('On ', DATE_FORMAT(NOW(), '%b %d %Y'), ' at ', DATE_FORMAT(NOW(), '%r'),
