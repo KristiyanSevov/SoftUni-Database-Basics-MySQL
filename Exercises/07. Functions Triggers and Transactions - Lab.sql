@@ -4,9 +4,9 @@ RETURNS INT
 BEGIN
 	DECLARE result INT;
 	SET result := (SELECT COUNT(e.employee_id) FROM employees as e
-					JOIN addresses as a ON e.address_id = a.address_id
-					JOIN towns as t ON a.town_id = t.town_id
-					WHERE t.name = town_name);
+			JOIN addresses as a ON e.address_id = a.address_id
+			JOIN towns as t ON a.town_id = t.town_id
+			WHERE t.name = town_name);
 	RETURN result;
 END;
 
@@ -22,13 +22,12 @@ END;
 CREATE PROCEDURE usp_raise_salary_by_id(id INT)
 BEGIN
 	START TRANSACTION;
-	CASE WHEN (SELECT employee_id FROM employees 
-			    WHERE employee_id = id) IS NULL
-		  THEN ROLLBACK;
-		  ELSE
-		  		UPDATE employees
-		  		SET salary = salary*1.05
-		  		WHERE employee_id = id;
+	CASE WHEN (SELECT employee_id FROM employees WHERE employee_id = id) IS NULL
+	THEN ROLLBACK;
+	ELSE
+		UPDATE employees
+		SET salary = salary*1.05
+		WHERE employee_id = id;
 	END CASE;
 	COMMIT;
 END;
