@@ -139,32 +139,30 @@ ORDER BY `submissions` DESC, id;
 CREATE PROCEDURE udp_login(username VARCHAR(30), `password` VARCHAR(30))
 BEGIN 
 	CASE WHEN (SELECT id FROM users as u WHERE u.username = username) IS NULL
-				 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username does not exist!';
-		  WHEN (SELECT id FROM users as u
-		  		 WHERE u.username = username 
-		  		 AND u.`password` = `password`) IS NULL 
-		  		 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Password is incorrect!';
-		  WHEN (SELECT id FROM logged_in_users as l WHERE l.username = username) IS NOT NULL
-		  		 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User is already logged in!';
-		  ELSE 
-		  		INSERT INTO logged_in_users (id, username, `password`, email) 
-		  		SELECT u.id, u.username, u.`password`, u.email FROM users as u
-		  		WHERE u.username = username;
-		  END CASE;
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Username does not exist!';
+	   WHEN (SELECT id FROM users as u WHERE u.username = username AND u.`password` = `password`) IS NULL 
+	      THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Password is incorrect!';
+	   WHEN (SELECT id FROM logged_in_users as l WHERE l.username = username) IS NOT NULL
+	      THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'User is already logged in!';
+	   ELSE 
+		 INSERT INTO logged_in_users (id, username, `password`, email) 
+		 SELECT u.id, u.username, u.`password`, u.email FROM users as u
+		 WHERE u.username = username;
+	END CASE;
 END;
 
 --Ex.16 Evaluate Submission
 CREATE PROCEDURE udp_evaluate(id INT)
 BEGIN 
 	CASE WHEN (SELECT id FROM submissions as s WHERE s.id = id) IS NULL
-				 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Submission does not exist!';
-		  ELSE 
-		  		INSERT INTO evaluated_submissions (id, problem, `user`, result) 
-		  		SELECT s.id, p.name, u.username, CEIL(p.points / p.tests * s.passed_tests) FROM submissions as s 
-				JOIN users as u ON s.user_id = u.id
-				JOIN problems as p ON s.problem_id = p.id
-				WHERE s.id = id;
-		  END CASE;
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Submission does not exist!';
+	ELSE 
+		INSERT INTO evaluated_submissions (id, problem, `user`, result) 
+		SELECT s.id, p.name, u.username, CEIL(p.points / p.tests * s.passed_tests) FROM submissions as s 
+		JOIN users as u ON s.user_id = u.id
+		JOIN problems as p ON s.problem_id = p.id
+		WHERE s.id = id;
+	END CASE;
 END;
 
 --Ex.17 Check Constraint
@@ -172,11 +170,11 @@ CREATE TRIGGER my_trigger BEFORE INSERT ON problems
 FOR EACH ROW
 BEGIN 
 	CASE WHEN NEW.name NOT LIKE '% %'
-				 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The given name is invalid!';
-		  WHEN NEW.points <= 0
-				 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The problem’s points cannot be less or equal to 0!';
-		  WHEN NEW.tests <= 0
-				 THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The problem’s tests cannot be less or equal to 0!';
-		  ELSE BEGIN END;
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The given name is invalid!';
+	WHEN NEW.points <= 0
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The problem’s points cannot be less or equal to 0!';
+	WHEN NEW.tests <= 0
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'The problem’s tests cannot be less or equal to 0!';
+	ELSE BEGIN END;
 END CASE;
 END;
