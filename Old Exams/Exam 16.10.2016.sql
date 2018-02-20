@@ -188,12 +188,12 @@ BEGIN
 	DECLARE max_id INT;
 	SET max_id := (SELECT MAX(c_r.review_id) FROM customer_reviews as c_r);
 	SET airline_id := (SELECT a.airline_id from airlines as a 
-							WHERE a.airline_name = airline_name);
+			   WHERE a.airline_name = airline_name);
 	CASE WHEN airline_id IS NULL 
-		  		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Airline does not exist.';
-		  ELSE
-		   	INSERT INTO customer_reviews
-				VALUES (IFNULL(max_id + 1, 1), review_content, review_grade, airline_id, customer_id);
+		THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Airline does not exist.';
+	ELSE
+		INSERT INTO customer_reviews
+		VALUES (IFNULL(max_id + 1, 1), review_content, review_grade, airline_id, customer_id);
 	END CASE;
 END;
 
@@ -205,7 +205,7 @@ BEGIN
 	DECLARE customer_balance INT;
 	SET max_id := (SELECT MAX(t.ticket_id) FROM tickets as t);
 	SET customer_balance := (SELECT b.balance FROM customer_bank_accounts as b 
-									WHERE b.customer_id = customer_id);
+				WHERE b.customer_id = customer_id);
 	START TRANSACTION;
 	IF ticket_price < 0
 		OR ticket_price > customer_balance
